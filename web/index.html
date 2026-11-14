@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ASTRA map</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='9' fill='%23e53935'/%3E%3C/svg%3E">
+  <link href="vendor/maplibre-gl.css" rel="stylesheet">
+  <link href="style.css" rel="stylesheet">
+</head>
+<body>
+  <!-- sinistra: navigazione -->
+  <aside class="colonna sinistra">
+    <div class="marca">ASTRA map<small>Stazioni delle reti ARPAS · dati giornalieri 2023</small></div>
+
+    <h4>Colore delle stazioni</h4>
+    <label class="riga"><input type="radio" name="modo" value="rete" checked>Per rete</label>
+    <div class="sotto-riga" id="legenda-reti"></div>
+    <label class="riga"><input type="radio" name="modo" value="misura">Per misura, nel giorno scelto</label>
+    <div class="sotto-riga">
+      <select id="misura-colore"></select>
+      <div class="legenda" id="legenda-misura" hidden><div id="legenda-barra"></div><div id="legenda-tacche"></div>
+        <small>Cerchio vuoto: nessun valore in quel giorno.</small></div>
+    </div>
+
+    <h4>Misure <span class="azioni"><button id="tutte">tutte</button><button id="nessuna">nessuna</button></span></h4>
+    <p class="nota">Restano sulla mappa le stazioni con almeno un valore, nel periodo scelto, per <b>ogni</b> misura selezionata.
+      Le stesse misure diventano i grafici a destra.</p>
+    <div id="misure"></div>
+    <p class="conteggio" id="conteggio"></p>
+
+    <h4>Mappa</h4>
+    <label class="campo">Sfondo
+      <select id="sfondo"><option value="satellite">Immagini satellitari</option><option value="osm">OpenStreetMap</option><option value="scuro">Scuro, solo rilievo</option></select></label>
+    <label class="riga"><input type="checkbox" id="rilievo3d" checked>Rilievo in 3D</label>
+    <label class="campo">Esagerazione del rilievo: <b id="esagerazione-testo"></b>
+      <input type="range" id="esagerazione" min="1" max="4" step="0.5" value="1.5"></label>
+    <div class="viste"><button id="vista-3d">Vista inclinata</button><button id="vista-alto">Vista dall'alto</button></div>
+    <p class="nota">Per inclinare e ruotare: trascina con il tasto destro, oppure Ctrl + trascina.</p>
+    <p class="fonte" id="fonte"></p>
+  </aside>
+
+  <!-- centro: mappa, tempo, valori del giorno -->
+  <main>
+    <div id="mappa-area"><div id="map"></div><div id="suggerimento" class="suggerimento" hidden></div><div id="avviso" class="avviso" hidden></div></div>
+    <section class="tempo">
+      <div class="tempo-testa">
+        <div class="periodo"><span>Periodo</span><strong id="periodo-testo"></strong></div>
+        <label class="giorno">Giorno <input type="date" id="giorno"></label>
+      </div>
+      <div class="doppio">
+        <div class="binario"><div id="tratto"></div><div id="segno-giorno" title="Giorno scelto"></div></div>
+        <input type="range" id="da" min="0" step="1" aria-label="Inizio del periodo">
+        <input type="range" id="a" min="0" step="1" aria-label="Fine del periodo">
+      </div>
+      <div class="mesi" id="mesi"></div>
+    </section>
+    <section class="giorno-dati" id="giorno-dati"></section>
+  </main>
+
+  <!-- destra: stazione scelta e grafici -->
+  <aside class="colonna destra" id="pannello"></aside>
+
+  <script src="vendor/maplibre-gl.js"></script>
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
