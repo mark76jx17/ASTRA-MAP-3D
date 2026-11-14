@@ -38,6 +38,14 @@ python -m http.server 8765 --directory web
 Poi apri http://localhost:8765. Il primo comando serve solo se cambiano i file di partenza: il risultato
 (`web/data/dati_2023.json`, 3 MB) è già nella cartella. Richiede Python con `pandas` e `openpyxl`.
 
+## Versione online
+
+La cartella `web/` è pubblicata con GitHub Pages all'indirizzo https://mark76jx17.github.io/ASTRA-MAP-3D/
+
+La pubblicazione è automatica (`.github/workflows/pages.yml`): parte a ogni push su `main` che modifica `web/`,
+oppure a mano dalla scheda *Actions* del repository. Funziona solo con il repository pubblico e con
+*Settings › Pages › Source* impostato su "GitHub Actions".
+
 ## Cosa fa `build_data.py`
 
 - Le **stazioni** della mappa sono quelle dell'anagrafica (338); le misure sono agganciate con `COD_STAZ`.

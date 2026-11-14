@@ -1,0 +1,35 @@
+# Pubblica la cartella web/ su GitHub Pages a ogni push su main che la modifica.
+# Richiede, una volta sola: repository pubblico e Settings > Pages > Source = "GitHub Actions".
+name: Pubblica la mappa su GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths: ['web/**', '.github/workflows/pages.yml']
+  workflow_dispatch:   # avvio manuale dalla scheda Actions
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  pubblica:
+    # finché il repository è privato non si pubblica nulla (e l'esecuzione non fallisce)
+    if: ${{ !github.event.repository.private }}
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.pubblica.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web
+      - id: pubblica
+        uses: actions/deploy-pages@v4
