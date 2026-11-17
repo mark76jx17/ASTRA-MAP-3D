@@ -320,6 +320,37 @@ function creaComandi() {
   window.addEventListener('resize', () => { if (stato.stazione >= 0) pannello(); });
 }
 
+// Apertura in uno stato preciso tramite l'indirizzo. Esempio:
+// ?misure=TCH,PCG&colore=TCH&da=2023-07-01&a=2023-07-31&giorno=2023-07-18&stazione=NU061S226&centro=9.2,40.0&zoom=9&pitch=55
+// Parametri: misure (codici separati da virgola, oppure "tutte"), modo (rete|misura), colore (codice), da, a, giorno (AAAA-MM-GG),
+// stazione (codice), sfondo (satellite|osm|scuro), rilievo (0 per spegnerlo), esagerazione, centro (lon,lat), zoom, pitch, bearing.
+function applicaIndirizzo() {
+  const p = new URLSearchParams(location.search);
+  if (![...p.keys()].length) return;
+  const data = (k) => (p.has(k) ? Math.max(0, Math.min(D.giorni - 1, indiceDi(p.get(k)))) : null);
+  const m = p.get('misure');
+  if (m) {
+    stato.scelte = new Set(m === 'tutte' ? D.misure.map((x) => x.id) : m.split(',').filter((id) => conteggi[id]));
+    document.querySelectorAll('#misure input').forEach((c) => { c.checked = stato.scelte.has(c.value); });
+  }
+  const c = p.get('colore');
+  if (c && conteggi[c]) { stato.misuraColore = c; $('misura-colore').value = c; stato.modo = 'misura'; }
+  if (['rete', 'misura'].includes(p.get('modo'))) stato.modo = p.get('modo');
+  document.querySelector(`input[name=modo][value=${stato.modo}]`).checked = true;
+  if (data('da') !== null) stato.da = data('da');
+  if (data('a') !== null) stato.a = Math.max(stato.da, data('a'));
+  if (data('giorno') !== null) stato.giorno = data('giorno');
+  const s = D.stazioni.findIndex((x) => x.cod === p.get('stazione'));
+  if (s >= 0) stato.stazione = s;
+  if (p.has('sfondo')) { $('sfondo').value = p.get('sfondo'); $('sfondo').dispatchEvent(new Event('change')); }
+  if (p.get('rilievo') === '0') { $('rilievo3d').checked = false; $('rilievo3d').dispatchEvent(new Event('change')); }
+  if (p.has('esagerazione')) { $('esagerazione').value = p.get('esagerazione'); $('esagerazione').dispatchEvent(new Event('input')); }
+  const vista = {};
+  if (p.has('centro')) vista.center = p.get('centro').split(',').map(Number);
+  for (const k of ['zoom', 'pitch', 'bearing']) if (p.has(k)) vista[k] = Number(p.get(k));
+  if (Object.keys(vista).length) map.jumpTo(vista);
+}
+
 async function avvio() {
   const [dati, isola] = await Promise.all(['data/dati_2023.json', 'data/sardegna.geojson'].map((u) => fetch(u).then((r) => {
     if (!r.ok) throw new Error(`${u}: ${r.status}`);
@@ -330,8 +361,11 @@ async function avvio() {
   stato.a = D.giorni - 1;
   await creaMappa(isola);
   creaComandi();
+  applicaIndirizzo();
   legendaMisura();
   aggiornaTempo();
+  if (stato.stazione >= 0) scegli(stato.stazione);
+  map.once('idle', () => { window.astraPronta = true; });   // segnale usato da chi cattura la mappa in automatico
 }
 
 avvio().catch((e) => { $('avviso').hidden = false; $('avviso').textContent = `Errore di avvio: ${e.message}`; console.error(e); });
